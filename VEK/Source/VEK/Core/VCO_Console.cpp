@@ -12,11 +12,16 @@
 
 #include <VEK/Core/VCO_Console.hpp>
 
-// For now just iostream, because we dont have a platform yet
-#include <iostream>
+// For now just stdio, because we dont have a platform yet
+#include <stdio.h>
 
 namespace VEK::Core {
-    void KConsoleStream::Write(const KSafeString<>& text, KConsoleColor color = KConsoleColor::Default) {
-        std::cout << text.c_str();
+
+    void KConsoleStream::Write(const KSafeString<>& text, KConsoleColor color) {
+        // TODO: Use Color
+
+        #ifndef VEK_NSX
+        printf(text.c_str());
+        #endif
     }
 }

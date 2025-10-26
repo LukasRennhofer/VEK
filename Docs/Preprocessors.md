@@ -6,6 +6,7 @@
 ## Platforms
  - ```VEK_WINDOWS```: Used to identify, if its a Windows build. **(RESERVED)**
  - ```VEK_LINUX```:   Used to identify, if its a Linux build. **(RESERVED)**
+ - ```VEK_NSX```:   Used to identify, if its a NSX (Nintendo Switch) build. **(RESERVED)**
 
 ## Graphics
  - ```VEK_OPENGL```: Used to identify, if its built with OpenGL Graphics. **(RESERVED)**

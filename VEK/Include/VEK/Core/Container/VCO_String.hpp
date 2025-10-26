@@ -14,7 +14,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
+#include <cstring>   // for std::strstr
+#include <cstddef>   // for size_t
 #include <memory>
 
 namespace VEK::Core {
@@ -60,10 +61,10 @@ namespace VEK::Core {
             size_t      size() const { return m_size; }
             const char *c_str() const { return m_using_sso ? m_sso_data : m_data; }
 
-            size_t find(const char *substr) const
+            size_t find(const char* substr) const
             {
-                const char *found = std::strstr(c_str(), substr);
-                return found ? static_cast<size_t>(found - c_str()) : std::string::npos;
+                const char* found = std::strstr(c_str(), substr);
+                return found ? static_cast<size_t>(found - c_str()) : static_cast<size_t>(-1);
             }
 
             KSafeString substr(size_t pos, size_t len) const
