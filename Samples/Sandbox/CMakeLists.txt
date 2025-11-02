@@ -32,11 +32,3 @@ target_include_directories(Sandbox PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Link to VEK
 target_link_libraries(Sandbox PRIVATE VEK)
-
-# =========================
-# Summary
-# =========================
-message(STATUS "-------------------------------------")
-message(STATUS "Building Sandbox")
-message(STATUS "Platform:   ${CMAKE_SYSTEM_NAME}")
-message(STATUS "-------------------------------------")
