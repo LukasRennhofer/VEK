@@ -1,12 +1,11 @@
 /*
 ================================================================================
-  VEK (Vantor Engine Kernel)
+  VEK (Vantor Engine Kernel) - Used by Vantor Studios
 --------------------------------------------------------------------------------
   Author  : Lukas Rennhofer (lukas.renn@aon.at)
   License : GNU General Public License v3.0
 
-  "God made the world. I just made a computer kingdom in it."
-      — Terry A. Davis
+  “Order the chaos, frame the void — and call it a world.”
 ================================================================================
 */
 

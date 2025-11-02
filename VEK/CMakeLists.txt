@@ -4,7 +4,7 @@
 # ==============================================================================
 
 cmake_minimum_required(VERSION 3.15)
-project(VEK LANGUAGES CXX)
+project(VEK LANGUAGES C CXX)
 
 # =========================
 # Options for flexibility
@@ -49,10 +49,44 @@ endif()
 # Collect sources
 # =========================
 
-file(GLOB_RECURSE VEK_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/*.c"
+# Common sources
+file(GLOB_RECURSE VEK_COMMON_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Core/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Core/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Math/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Math/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Integration/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Integration/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Network/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Network/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/RHI/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/RHI/*.c"
 )
+
+# Platform-specific sources
+if(WIN32)
+    file(GLOB_RECURSE VEK_PLATFORM_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/VPL_Platform.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/Impl/Windows/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/Impl/Windows/*.c"
+    )
+elseif(UNIX)
+    file(GLOB_RECURSE VEK_PLATFORM_SOURCES CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/VPL_Platform.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/Impl/Linux/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Source/VEK/Platform/Impl/Linux/*.c"
+    )
+endif()
+
+# Combine all sources
+set(VEK_SOURCES ${VEK_COMMON_SOURCES} ${VEK_PLATFORM_SOURCES})
+
+# Add GLAD sources directly if using OpenGL
+if(VEK_USE_OPENGL)
+    list(APPEND VEK_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/External/glad/glad.c"
+    )
+endif()
 
 # =========================
 # Define library
@@ -64,8 +98,7 @@ add_library(VEK STATIC ${VEK_SOURCES})
 target_include_directories(VEK
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>
-    # Expose a virtual include path so users can write #include <External/...>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/External>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/External>
         $<INSTALL_INTERFACE:include>
 )
 
@@ -82,7 +115,7 @@ else()
 endif()
 
 # =========================
-# Link dependencies (optional)
+# Link dependencies
 # =========================
 
 if(VEK_USE_OPENGL)
@@ -93,6 +126,29 @@ endif()
 if(VEK_USE_VULKAN)
     find_package(Vulkan REQUIRED)
     target_link_libraries(VEK PUBLIC Vulkan::Vulkan)
+endif()
+
+# Platform-specific libraries
+if(UNIX AND NOT APPLE)
+    # Linux requires X11 libraries
+    find_package(X11 REQUIRED)
+    target_link_libraries(VEK PUBLIC ${X11_LIBRARIES})
+    if(VEK_USE_OPENGL)
+        # GLX for OpenGL on X11
+        target_link_libraries(VEK PUBLIC GL)
+    endif()
+elseif(WIN32)
+    # Windows platform libraries
+    target_link_libraries(VEK PUBLIC gdi32 user32 dinput8 xinput dxguid)
+    if(VEK_USE_OPENGL)
+        target_link_libraries(VEK PUBLIC opengl32)
+    endif()
+endif()
+
+# If an External folder exists, expose it to the build and install its headers
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/External")
+    # Install any headers from External into the installed include tree under External/
+    install(DIRECTORY External/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/External FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl" PATTERN "*.ipp")
 endif()
 
 # =========================
@@ -108,17 +164,6 @@ install(TARGETS VEK
 )
 
 install(DIRECTORY Include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# If an External folder exists, expose it to the build and install its headers
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/External")
-    # If External contains a CMakeLists.txt, add it so any subtargets get configured
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/External/CMakeLists.txt")
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/External)
-    endif()
-
-    # Install any headers from External into the installed include tree under External/
-    install(DIRECTORY External/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/External FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl" PATTERN "*.ipp")
-endif()
 
 install(EXPORT VEKTargets
     FILE VEKTargets.cmake

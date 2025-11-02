@@ -6,6 +6,6 @@
 | Math      | `M`          | `MVec3`, `MMat4`                   |
 | System    | `S`          | `SWindow`, `STimer`                |
 | Graphics  | `G`          | `GDevice`, `GShader`, `GBuffer`    |
-| Interface  | `I`          | `IMesh`, `ITexture2D`, `IShaderProgram`    |
+| Interface | `I`          | `IMesh`, `ITexture2D`, `IShaderProgram`|
 | Debug     | `D`          | `DConsole`, `DProfiler`            |
 
